@@ -29,6 +29,7 @@ Steps 1–4 are run offline ahead of time to build the song dataset. The live ap
 3. Create a `.env` file with your API keys:
 
 GEMINI_API_KEY=your_key_here
+
 GENIUS_ACCESS_TOKEN=your_key_here
 
 4. Run the app: `streamlit run DrizzyAI.py`
