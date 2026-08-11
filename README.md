@@ -36,4 +36,4 @@ GENIUS_ACCESS_TOKEN=your_key_here
 
 ## Status
 
-Currently expanding song coverage in batches of 100. More ongs are being added to the dataset over time.
+Currently expanding song coverage in batches of 100. More songs are being added to the dataset over time.
