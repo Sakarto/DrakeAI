@@ -9,7 +9,7 @@ import streamlit as st
 
 load_dotenv()
 gemini_api_key = os.environ['GEMINI_API_KEY']
-
+file = os.environ['PAGE_FILE']
 
 st.title('DrizzyAI: Find a Drake song for any feeling!')
 #----------------------------------------------------------------------------------------------------------------------------------
@@ -24,8 +24,8 @@ embedded_user_response = client.models._embed_content(model="gemini-embedding-00
 
 # Compare Embedding and Track Selection:
 
-with open('embedded_tracks.json', 'r') as file:
-    embtracks = json.load(file)
+with open(file, 'r') as f:
+    embtracks = json.load(f)
 
 user_tensor = torch.tensor(embedded_user_response.embeddings[0].values).unsqueeze(0)
 
