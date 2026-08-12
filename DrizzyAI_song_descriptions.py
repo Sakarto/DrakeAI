@@ -14,36 +14,53 @@ load_dotenv()
 genius_access_token = os.environ['GENIUS_ACCESS_TOKEN']
 gemini_api_key = os.environ['GEMINI_API_KEY']
 id = str(os.environ['ARTIST_ID'])
-file = os.environ['PAGE_FILE']
+embedded_file = os.environ['EMBEDDED_FILE']
+missed_file = os.environ['MISSED_FILE']
 page_num = int(os.environ['CURRENT_PAGE']) 
 
 embedded_tracks = {}
-if os.path.exists(file):
-    with open(file, "r") as f:
+if os.path.exists(embedded_file):
+    with open(embedded_file, "r") as f:
         embedded_tracks = json.load(f)   
 else:
-    with open(file, "w") as f:
+    with open(embedded_file, "w") as f:
         json.dump(embedded_tracks, f)
     dotenv.set_key(dotenv_path='.env', key_to_set='CURRENT_PAGE', value_to_set='1')
     dotenv.load_dotenv(dotenv_path='.env', override=True)
     page_num = 1
+
+missed_tracks = []
+if os.path.exists(missed_file):
+    with open(missed_file, 'r') as f:
+        missed_tracks = json.load(f)
+else:
+    with open(missed_file, 'w') as f:
+        json.dump(missed_tracks, f)
 #----------------------------------------------------------------------------------------------------------------------------------
 
 # Lyrics:
 
 TOKEN = genius_access_token
 genius = lyricsgenius.Genius(TOKEN, timeout=60, retries=3)
-lyrics = {}
 
+lyrics = {}
 for a in [1, 2]:
     songs = genius.artist_songs(id, sort='title', per_page=50, page=page_num)
     for song in songs['songs']:
         if song['title'] not in embedded_tracks.keys():
-            lyrics[song['title']] = genius.search_song(title=song['title'], artist='Drake').lyrics
+            song_check = genius.search_song(title=song['title'], artist='Drake')
+            if (song_check is None) or (song_check.lyrics is None):
+                missed_tracks.append(song['title'])
+                continue
+            else:
+                lyrics[song['title']] = song_check.lyrics
         else:
-            pass
+            continue
     page_num += 1
 page_num -= 2
+
+with open(missed_file, 'w') as f:
+    json.dump(missed_tracks, f)
 #----------------------------------------------------------------------------------------------------------------------------------
 
 # External Research:
@@ -71,7 +88,7 @@ for song, lyric in lyrics.items():
 for song, description in song_descriptions.items():
     embedded_tracks[song] = client.models._embed_content(model="gemini-embedding-001", contents=description).embeddings[0].values
 
-with open(file, "w") as f:
+with open(embedded_file, "w") as f:
     json.dump(embedded_tracks, f)
 
 dotenv.set_key(dotenv_path='.env', key_to_set='CURRENT_PAGE', value_to_set=str(int(page_num) + 2))
