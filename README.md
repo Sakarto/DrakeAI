@@ -42,4 +42,4 @@ The dataset is built one album at a time by running `DrizzyAI_song_descriptions.
 
 ## Status
 
-Currently expanding song coverage album by album. More albums are being added to the dataset over time.
+All of Drake's studio albums have been added to the dataset. Standalone singles and loose tracks are not currently included.
