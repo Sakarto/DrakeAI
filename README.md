@@ -2,6 +2,8 @@
 
 Find a Drake song for any feeling.
 
+You can try the live app using the website link on the right side of this GitHub page.
+
 DrizzyAI is a mood-based Drake song recommender. Describe how you're feeling — a specific moment, a vague vibe, anything — and it matches you to the Drake song that fits best, using AI-generated song descriptions and semantic similarity search.
 
 ## How it works
