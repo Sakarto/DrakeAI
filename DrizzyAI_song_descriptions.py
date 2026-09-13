@@ -14,7 +14,7 @@ genius_access_token = os.environ['GENIUS_ACCESS_TOKEN']
 gemini_api_key = os.environ['GEMINI_API_KEY']
 
 # Change this to the album you want to process this run:
-album_name = "So Far Gone"
+album_name = os.environ['ALBUM_NAME']
 
 embedded_tracks = {}
 if os.path.exists("embedded_tracks.json"):
