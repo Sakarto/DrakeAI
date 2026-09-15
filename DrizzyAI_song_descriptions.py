@@ -22,7 +22,7 @@ if os.path.exists("embedded_tracks.json"):
         embedded_tracks = json.load(f)
 else:
     with open("embedded_tracks.json", "w") as f:
-        json.dump(embedded_tracks, f)
+        json.dump(embedded_tracks, f, ensure_ascii=False)
 
 missed_tracks = []
 if os.path.exists("missed_tracks.json"):
@@ -30,7 +30,7 @@ if os.path.exists("missed_tracks.json"):
         missed_tracks = json.load(f)
 else:
     with open("missed_tracks.json", 'w') as f:
-        json.dump(missed_tracks, f)
+        json.dump(missed_tracks, f, ensure_ascii=False)
 #----------------------------------------------------------------------------------------------------------------------------------
 
 # Lyrics:
@@ -51,33 +51,34 @@ for track_number, song in album.tracks:
     lyrics[title] = song.lyrics
 
 with open("missed_tracks.json", 'w') as f:
-    json.dump(missed_tracks, f)
+    json.dump(missed_tracks, f, ensure_ascii=False)
 #----------------------------------------------------------------------------------------------------------------------------------
 
-# External Research:
+# External Research Keywords:
 
 client = genai.Client(api_key=gemini_api_key)
 
-external_research = []
-for song, lyric in lyrics.items():
-    external_research.append(client.models.generate_content(model="gemini-3.5-flash-lite", contents=f'You are researching the Drake song "{song}" (from the album "{album_name}") to understand its specific critical reception, meaning, and cultural context — not generic observations that could apply to any Drake song from this era.  Use web search to find information on: 1. Critical reception — how reviewers/critics specifically described THIS song\'s sound, mood, or quality (e.g., Pitchfork, Rolling Stone, Complex, HotNewHipHop, or similar outlets) 2. Lyrical meaning and interpretation — what THIS song is specifically about, any known backstory or context behind why it was written 3. Sonic/production description — how THIS song\'s beat, tempo, or production is specifically described, including anything that distinguishes it from other tracks on the same album 4. Cultural context or reputation — what THIS song specifically is known for, how fans commonly talk about it, or moments/scenarios it\'s specifically associated with  Prioritize any details that make this song distinct from other songs on the same album — tempo differences, unusual samples, guest features, standout lyrical moments, or specific reception it received. Summarize your findings in clear, factual notes organized under those four categories. If you can\'t find solid information for a category, say so rather than guessing. Do not fabricate sources or claims — only report what your search actually surfaces.').text)
+context_keywords = {}
+keywords = 10
+for song in lyrics.keys():
+    context_keywords[song] = (client.models.generate_content(model="gemini-3.5-flash-lite", contents=f'You are building a keyword profile for the Drake song "{song}" for a semantic search system that matches songs to short, freeform descriptions of a person\'s mood or life moment.\n\nFirst, use web search to research this specific song — not generic facts about Drake or this album era, but details specific to "{song}" itself: its critical reception (e.g. Pitchfork, Rolling Stone, Complex, HotNewHipHop, or similar outlets), its lyrical meaning and any known backstory, its sonic/production style and tempo, and what it\'s specifically known for or associated with. Prioritize whatever makes this song distinct from other songs on the same album — tempo, samples, features, standout moments, specific reception. If you cannot find solid information on some of this, rely on what you do find rather than guessing or fabricating anything.\n\nThen, based only on what your research actually surfaced, generate exactly {keywords} keywords or short phrases (1-4 words each) that capture this song\'s specific identity. Cover a mix of: its emotional tone and mood, its energy or pace (e.g. restless, laid-back, triumphant, tense, upbeat, aggressive), concrete imagery or subject matter unique to it, and specific situations, settings, or life moments it genuinely fits — consider the full range of possibilities (morning, day, evening, night; solitary or social; active or restful; work, exercise, romance, celebration, conflict, etc.) and choose whichever domains actually fit this song\'s real content, not whichever is a safe default.\n\nBefore including any keyword referencing time of day (e.g. "late night," "midnight," "nocturnal," "morning") or a generic mood-atmosphere descriptor (e.g. "hazy," "atmospheric," "vibes"), require specific, direct evidence from the lyrics or research that this song is actually about or set in that time or mood — not just an overall tone that loosely fits. If you do not have that direct, specific evidence, choose a different, more concrete keyword instead. Do not use terms so generic they could apply to most Drake songs (e.g. "fame," "money," "relationships") unless paired with something specific that makes this song\'s take on that theme distinct. Avoid restating the song title or artist name.\n\nRespond with only the final list of exactly {keywords} keywords or phrases, one per line. Do not include your research notes, any explanation, commas, numbering, bullet points, or quotation marks — just the plain keywords or phrases, each on its own line.').text)
     sleep(10)
 #----------------------------------------------------------------------------------------------------------------------------------
 
-# Writing Description:
+# Embedding Lyrics and Keywords:
 
-song_descriptions = {}
-i = 0
+lyric_embeddings = {}
 for song, lyric in lyrics.items():
-    song_descriptions[song] = (client.models.generate_content(model="gemini-3.5-flash-lite", contents=f"You are creating a rich descriptive profile of the Drake song \"{song}\" for a music recommendation system. This profile will be compared against everyday life scenarios and moods to find the best song match — so it needs to be specific enough to this song that it couldn't be mistaken for a different song on the same album.  Here are the song's lyrics: {lyric}  Here is research on the song's reception, meaning, sound, and context: {external_research[i]}  Before writing, identify what makes this song specifically distinct — its actual tempo, its actual lyrical content, its actual mood — rather than defaulting to general assumptions about the artist or album era. If the song genuinely is a late-night, moody track, say so — accuracy matters more than forced variety. But do not default to \"late-night,\" \"3 AM,\" \"hazy,\" \"nocturnal,\" or \"atmospheric\" unless the lyrics or research actually support that specific characterization for this specific song.  Write a single dense paragraph (6-10 sentences) that captures: - The overall mood and emotional tone, grounded in what's actually in the lyrics/research (not a generic assumption) - The energy/pace (e.g., high-energy, laid-back, tense, restless, triumphant, upbeat, aggressive, playful) — pick whatever is actually true, don't default to the same descriptor every time - Key imagery or themes specific to this song's lyrics - The sonic/production feel, if mentioned in the research - Situations, times of day, or life moments this song could realistically fit — consider the full range of possibilities (morning, day, evening, night; solitary or social; active or restful; work, exercise, romance, celebration, etc.) and choose whichever actually fits this song's real content, rather than defaulting to nighttime/solitary scenarios by habit  Write it as a flowing descriptive paragraph, not a list or summary of the plot. Avoid simply restating the lyrics — translate them into mood and scenario language. Do not fabricate details that aren't supported by the lyrics or research notes provided.").text)
-    i += 1
-    sleep(10)
-#----------------------------------------------------------------------------------------------------------------------------------
+    lyric_embeddings[song] = (client.models._embed_content(model="gemini-embedding-001", contents=lyric).embeddings[0].values)
+    sleep(1)
+    
+keyword_embeddings = {}
+for title, keyword in context_keywords.items():
+    keyword_embeddings[title] = (client.models._embed_content(model="gemini-embedding-001", contents=keyword).embeddings[0].values)
+    sleep(1)
 
-# Embedding Tracks:
-
-for song, description in song_descriptions.items():
-    embedded_tracks[song] = client.models._embed_content(model="gemini-embedding-001", contents=description).embeddings[0].values
+for title in lyrics.keys():
+    embedded_tracks[title] = [lyric_embeddings[title], keyword_embeddings[title]]
     with open("embedded_tracks.json", "w") as f:
-        json.dump(embedded_tracks, f)
+        json.dump(embedded_tracks, f, ensure_ascii=False)
 #----------------------------------------------------------------------------------------------------------------------------------

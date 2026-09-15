@@ -30,10 +30,19 @@ with open("embedded_tracks.json", 'r') as f:
 user_tensor = torch.tensor(embedded_user_response.embeddings[0].values).unsqueeze(0)
 
 
+lyric_similarities = []
+keyword_similarities = []
+for track, [lyric_embedding, keyword_embedding] in embtracks.items():
+    lyric_tensor = torch.tensor(lyric_embedding).unsqueeze(0)
+    keyword_tensor = torch.tensor(keyword_embedding).unsqueeze(0)
+    lyric_similarities.append((F.cosine_similarity(user_tensor, lyric_tensor)).item())
+    keyword_similarities.append((F.cosine_similarity(user_tensor, keyword_tensor)).item())
+
+k = 0
 similarities = []
-for track, embedding in embtracks.items():
-    track_tensor = torch.tensor(embedding).unsqueeze(0)
-    similarities.append((F.cosine_similarity(user_tensor, track_tensor)).item())
+for track in lyric_similarities:
+    similarities.append(track + keyword_similarities[k])
+    k += 1
 
 highest_similarity_spot = similarities.index(max(similarities))
 
