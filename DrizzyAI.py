@@ -11,8 +11,7 @@ load_dotenv()
 gemini_api_key = os.environ['GEMINI_API_KEY']
 
 st.title(body='DrakeAI: Find a Drake song for any feeling!', text_alignment="center")
-st.subheader(body='Take the advice and give it a listen :)', text_alignment="center")
-st.text(body="Disclaimer: DrakeAI will get more accurate over time!", text_alignment="center")
+st.subheader(body='Take the advice and give it a listen :)\nDisclaimer: DrakeAI will get more accurate over time!', text_alignment="center")
 #----------------------------------------------------------------------------------------------------------------------------------
 
 # User Input/Embedding:
