@@ -45,7 +45,7 @@ for track_number, song in album.tracks:
     title = song.title
     if title in embedded_tracks.keys():
         continue
-    if song.lyrics is None:
+    if not song.lyrics:
         missed_tracks.append(title)
         continue
     lyrics[title] = song.lyrics
