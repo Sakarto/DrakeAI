@@ -1,1 +1,6 @@
 .env
+.DS_Store
+DrakeAI.py
+DrakeAI_Verifier.py
+OG_DrizzyAI.py
+unverified_tracks.json
