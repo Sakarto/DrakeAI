@@ -10,7 +10,7 @@ import streamlit as st
 load_dotenv()
 gemini_api_key = os.environ['GEMINI_API_KEY']
 
-st.title(body='DrakeAI: Find a Drake song for any feeling!', wrap=False)
+st.title(body='DrakeAI: Find a Drake song for any feeling!', TextAlignment="center")
 st.subheader(body='Take the advice and give it a listen :)', wrap=False)
 st.text(body="Disclaimer: DrakeAI will get more accurate over time!", wrap=False)
 #----------------------------------------------------------------------------------------------------------------------------------
